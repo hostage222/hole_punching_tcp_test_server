@@ -29,17 +29,27 @@ server::server(uint16_t port) :
 
 void server::start()
 {
-    auto client = talk_to_client::create(shared_from_this(), service);
+    auto client = new talk_to_client{shared_from_this(), service};
     acceptor.async_accept(client->socket(),
                           [this, client](boost_error error)
-                          { handle_accept(client, error); });
+                          {handle_accept(talk_to_client::ptr{client}, error);});
     service.run();
 }
 
 void server::remove_client(server::talk_to_client::ptr client)
 {
-    clients_by_name.erase(client->name());
-    clients_by_endpoint.erase(client->socket().remote_endpoint());
+    auto name_it = clients_by_name.find(client->name());
+    auto endpoint_it = clients_by_endpoint.find(
+                client->socket().remote_endpoint());
+    if (name_it != clients_by_name.cend() ||
+        endpoint_it != clients_by_endpoint.cend())
+    {
+        cout << "disconnected: \"" << client->name() << "\"(" <<
+                talk_to_client::to_string(client->socket().remote_endpoint()) <<
+                ")" << endl;
+        clients_by_name.erase(name_it);
+        clients_by_endpoint.erase(endpoint_it);
+    }
 }
 
 bool server::rename_client(server::talk_to_client::ptr client,

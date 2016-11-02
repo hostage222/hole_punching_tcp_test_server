@@ -26,9 +26,8 @@ private:
 
     class talk_to_client : public std::enable_shared_from_this<talk_to_client>
     {
-        talk_to_client(weak_ptr serv, boost::asio::io_service &service);
-
     public:
+        talk_to_client(weak_ptr serv, boost::asio::io_service &service);
         using ptr = std::shared_ptr<talk_to_client>;
         static ptr create(weak_ptr serv, boost::asio::io_service &service);
 
